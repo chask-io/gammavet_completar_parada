@@ -2,10 +2,8 @@
   "function_name": "CompletarParadaFn",
   "test_type": "provided_params",
   "args": {
-    "route_stop_id": "053c16af-21c1-4da4-b6f4-7aa870d7f112",
-    "pickup_order_id": "e25eba8d-6e7e-45e6-a19e-f565118da77f",
-    "driver_phone": "+56964379348",
-    "nota": "Completado"
+    "driver_phone": "+56900000000",
+    "nota": "Completado - prueba sin parada activa"
   },
   "widget_params": {},
   "prompt": "",
@@ -13,7 +11,7 @@
   "extra_params": {},
   "files": [],
   "metadata": {
-    "description": "Complete the exact Crubvet stop with explicit route_stop_id/pickup_order_id",
+    "description": "Non-mutating publish gate: no active stop terminal handoff",
     "expected_status": "success"
   }
 }
