@@ -626,6 +626,41 @@ class ConductorContext:
         except Exception as exc:  # pragma: no cover - external failure path
             logger.error("Error emitiendo dispatch_event %s: %s", event_type, exc)
 
+    def pause_session_until_next_driver_message(self, *, reason: str) -> None:
+        """Stop the operator turn after one action; WhatsApp inbound resumes paused sessions."""
+        extra_params = self.evento_orquestacion.extra_params or {}
+        if extra_params.get("is_test") or extra_params.get("is_node_test"):
+            return
+        session_uuid = self.evento_orquestacion.orchestration_session_uuid
+        if not session_uuid:
+            logger.warning("No se puede pausar sesion: orchestration_session_uuid ausente")
+            return
+        try:
+            response = orchestrator_api_manager.call(
+                "change_orchestration_session_status",
+                orchestration_session_id=str(session_uuid),
+                status="paused",
+                access_token=self.evento_orquestacion.access_token,
+                organization_id=self.evento_orquestacion.organization.organization_id,
+            )
+            logger.info(
+                "Sesion %s pausada hasta proximo mensaje del conductor: %s response=%s",
+                session_uuid,
+                reason,
+                response,
+            )
+            self.emit_dispatch_event(
+                event_type="conductor_session_paused_until_next_driver_message",
+                metadata={
+                    "reason": reason,
+                    "session_uuid": str(session_uuid),
+                    "event_id": str(self.evento_orquestacion.event_id),
+                    "actor_lambda": self.runtime.actor_lambda,
+                },
+            )
+        except Exception as exc:  # pragma: no cover - external failure path
+            logger.error("Error pausando sesion hasta proximo mensaje: %s", exc)
+
     # ------------------------------------------------------------------
     # Event parsing helpers
     # ------------------------------------------------------------------

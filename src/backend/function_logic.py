@@ -96,7 +96,11 @@ class FunctionBackend:
                 "route_stop_id/pickup_order_id en respuesta Tenant API."
             )
 
-        return self._notify_completion(result, completed_stop)
+        message = self._notify_completion(result, completed_stop)
+        self.context.pause_session_until_next_driver_message(
+            reason="completar_parada_success"
+        )
+        return message
 
     def _notify_completion(self, result: dict[str, Any], completed_stop: dict[str, Any]) -> str:
         num_actual = completed_stop.get("stop_number") or completed_stop.get("queue_position") or "?"

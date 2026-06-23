@@ -139,7 +139,19 @@ def test_completar_parada_passes_exact_ids_and_confirms_next_stop(monkeypatch):
     assert "marcada como completada" in result
     prompts = [c["prompt"] for c in fake_orchestrator.calls if c["endpoint"] == "evolve_event"]
     assert any("nueva ruta pendiente" in prompt for prompt in prompts)
-    assert not any(c.get("event_type") == "dispatch_event" for c in fake_orchestrator.calls)
+    pause_call = next(
+        c for c in fake_orchestrator.calls
+        if c["endpoint"] == "change_orchestration_session_status"
+    )
+    assert pause_call["orchestration_session_id"] == "ticket-1"
+    assert pause_call["status"] == "paused"
+    dispatch_calls = [
+        c for c in fake_orchestrator.calls
+        if c["endpoint"] == "evolve_event" and c.get("event_type") == "dispatch_event"
+    ]
+    assert dispatch_calls[0]["extra_params"]["event_type"] == (
+        "conductor_session_paused_until_next_driver_message"
+    )
 
 
 def test_completar_parada_blocks_mismatched_tenant_response(monkeypatch):
