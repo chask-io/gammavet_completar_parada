@@ -638,7 +638,7 @@ class ConductorContext:
         try:
             response = orchestrator_api_manager.call(
                 "change_orchestration_session_status",
-                orchestration_session_id=str(session_uuid),
+                orchestration_session_uuid=str(session_uuid),
                 status="paused",
                 access_token=self.evento_orquestacion.access_token,
                 organization_id=self.evento_orquestacion.organization.organization_id,

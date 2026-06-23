@@ -143,7 +143,7 @@ def test_completar_parada_passes_exact_ids_and_confirms_next_stop(monkeypatch):
         c for c in fake_orchestrator.calls
         if c["endpoint"] == "change_orchestration_session_status"
     )
-    assert pause_call["orchestration_session_id"] == "ticket-1"
+    assert pause_call["orchestration_session_uuid"] == "ticket-1"
     assert pause_call["status"] == "paused"
     dispatch_calls = [
         c for c in fake_orchestrator.calls
