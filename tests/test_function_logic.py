@@ -186,10 +186,32 @@ def test_completar_parada_blocks_mismatched_tenant_response(monkeypatch):
     assert whatsapp_calls == []
 
 
+def test_completar_parada_missing_route_stop_is_terminal_before_tenant(monkeypatch):
+    tenant_client = FakeTenantClient([{"unexpected": True}])
+    fake_orchestrator = FakeOrchestrator()
+    backend = FunctionBackend(_event({"driver_phone": "+56 9 1111 2222"}))
+    monkeypatch.setattr(backend.context, "tenant_client", lambda: tenant_client)
+    monkeypatch.setattr("backend.conductor_common.orchestrator_api_manager", fake_orchestrator)
+
+    result = backend.process_request()
+
+    assert "Handoff terminal" in result
+    assert tenant_client.calls == []
+    dispatch_call = next(
+        c for c in fake_orchestrator.calls
+        if c["endpoint"] == "evolve_event" and c.get("event_type") == "dispatch_event"
+    )
+    assert dispatch_call["extra_params"]["event_type"] == (
+        "conductor_complete_route_stop_id_missing_terminal"
+    )
+
+
 def test_completar_parada_no_active_stop_is_terminal(monkeypatch):
     tenant_client = FakeTenantClient([_http_404()])
     fake_orchestrator = FakeOrchestrator()
-    backend = FunctionBackend(_event({"driver_phone": "+56 9 1111 2222"}))
+    backend = FunctionBackend(
+        _event({"driver_phone": "+56 9 1111 2222", "route_stop_id": ROUTE_STOP_ID})
+    )
     monkeypatch.setattr(backend.context, "tenant_client", lambda: tenant_client)
     monkeypatch.setattr("backend.conductor_common.orchestrator_api_manager", fake_orchestrator)
 

@@ -44,6 +44,11 @@ class FunctionBackend:
         args = self.context.tool_args()
         nota = str(args.get("nota") or args.get("note") or "").strip()
         resolved = self.context.resolve_route_stop_ids()
+        if not resolved.route_stop_id:
+            return self.context.completion_missing_route_stop_terminal(
+                action_name="completar_parada",
+                outcome=ESTADO_COMPLETADO,
+            )
 
         payload = self.context.build_driver_action_payload()
         if resolved.route_stop_id:
